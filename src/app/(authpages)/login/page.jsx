@@ -1,15 +1,18 @@
 "use client"
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const router = useRouter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Login form submitted:', form);
+    router.push('/chat')
   };
 
   return (
