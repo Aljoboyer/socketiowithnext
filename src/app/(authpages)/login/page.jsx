@@ -12,7 +12,7 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Login form submitted:', form);
-    router.push('/chat')
+    router.push('/home')
   };
 
   return (
