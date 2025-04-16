@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:8000");
 
 const mockUsers = [
   { id: 1, name: "Alice", lastMessage: "Hi, how are you?" },
@@ -23,6 +26,16 @@ export default function ChatPage() {
       setNewMessage("");
     }
   };
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("🟢 Connected with ID:", socket.id);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div className="flex h-full">
