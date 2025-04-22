@@ -9,10 +9,21 @@ const Login = () => {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login form submitted:', form);
-    router.push('/home')
+    const response = await fetch('http://localhost:8000/api/v1/user/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(form),
+    });
+
+    const data = await response.json();
+    if(data){
+      localStorage.setItem("userdata", JSON.stringify(data?.result))
+      router.push('/home')
+    }
   };
 
   return (

@@ -10,33 +10,37 @@ const mockUsers = [
   { id: 3, name: "Charlie", lastMessage: "Long time no see!" },
 ];
 
-const mockMessages = [
-  { id: 1, from: "Alice", text: "Hi!", time: "10:00 AM" },
-  { id: 2, from: "me", text: "Hello Alice!", time: "10:01 AM" },
-];
-
 export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState(mockMessages);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const userData = JSON.parse(localStorage.getItem("userdata"))
 
+  const idObj ={srk: "918d57da-33c9-4742-9e4f-6446424f5e79", rock: "6fe15e65-87ff-4f81-96f4-53b5048492dc"}
   const handleSend = () => {
-    if (newMessage.trim() !== "") {
-      setMessages([...messages, { id: Date.now(), from: "me", text: newMessage, time: "Now" }]);
-      setNewMessage("");
+    const msgObj = {
+      toUserId: userData?.user_id == idObj?.srk ? idObj?.rock : idObj.srk,     // Receiver's userId
+      fromUserId: userData?.user_id,  // Sender's userId
+      message: newMessage,
     }
+    socket.emit("sendPrivateMessage", msgObj);
+   
   };
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("🟢 Connected with ID:", socket.id);
+    socket.emit("join", {
+      userId: userData?.user_id, // Use unique ID from auth system
     });
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
-
+  
+  useEffect(() => {
+    socket.on("receivePrivateMessage", (msg) => {
+      console.log("📩 Private message ", msg );
+      setMessages((prev) => [...prev, msg])
+    });
+  
+  }, []);
+  
   return (
     <div className="flex h-full">
       {/* Chat List */}
@@ -51,7 +55,7 @@ export default function ChatPage() {
                 setMessages(mockMessages); // Reset with dummy messages
               }}
               className={`cursor-pointer p-3 rounded-lg ${
-                selectedUser?.id === user.id
+                user?.id === user.id
                   ? "bg-blue-100"
                   : "hover:bg-gray-100"
               }`}
@@ -83,12 +87,12 @@ export default function ChatPage() {
                 <div
                   key={msg.id}
                   className={`mb-3 max-w-xs px-4 py-2 rounded-lg ${
-                    msg.from === "me"
+                    msg.fromUserId === userData?.user_id
                       ? "bg-blue-500 text-white ml-auto"
                       : "bg-white border"
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <p>{msg.message}</p>
                   <span className="block text-xs text-right text-gray-400 mt-1">
                     {msg.time}
                   </span>
