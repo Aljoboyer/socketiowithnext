@@ -1,7 +1,11 @@
 "use client"
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 export default function DashboardLayout({ children }) {
+    const router = useRouter();
+  
+
   return (
     <div className="flex flex-col h-screen">
       {/* Sticky Navbar */}
@@ -27,6 +31,7 @@ export default function DashboardLayout({ children }) {
               <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Logout</li>
             </ul>
           </div>
+         
         </div>
       </header>
 
@@ -45,6 +50,11 @@ export default function DashboardLayout({ children }) {
               Profile
             </Link>
           </nav>
+          <button onClick={() => {
+            localStorage.removeItem('userdata')
+      router.push('/')
+            
+          }} className="text-blue-700 font-bold text-lg cursor-pointer">Logout</button>
         </aside>
 
         {/* Page Content */}

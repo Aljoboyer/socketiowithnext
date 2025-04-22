@@ -4,27 +4,27 @@ import { io } from "socket.io-client";
 
 const socket = io("http://localhost:8000");
 
-const mockUsers = [
-  { id: 1, name: "Alice", lastMessage: "Hi, how are you?" },
-  { id: 2, name: "Bob", lastMessage: "Check this out!" },
-  { id: 3, name: "Charlie", lastMessage: "Long time no see!" },
-];
-
 export default function ChatPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [activeUsers, setActiveUsers] = useState([])
+  
   const userData = JSON.parse(localStorage.getItem("userdata"))
 
-  const idObj ={srk: "918d57da-33c9-4742-9e4f-6446424f5e79", rock: "6fe15e65-87ff-4f81-96f4-53b5048492dc"}
   const handleSend = () => {
     const msgObj = {
-      toUserId: userData?.user_id == idObj?.srk ? idObj?.rock : idObj.srk,     // Receiver's userId
+      toUserId: selectedUser?.user_id,     // Receiver's userId
       fromUserId: userData?.user_id,  // Sender's userId
       message: newMessage,
     }
     socket.emit("sendPrivateMessage", msgObj);
-   
+    const uiMsgObj = {
+      to: selectedUser?.user_id,     // Receiver's userId
+      from: userData?.user_id,  // Sender's userId
+      msg: newMessage,
+    }
+   setMessages((prev) => [...prev, uiMsgObj])
   };
 
   useEffect(() => {
@@ -36,7 +36,9 @@ export default function ChatPage() {
   useEffect(() => {
     socket.on("receivePrivateMessage", (msg) => {
       console.log("📩 Private message ", msg );
-      setMessages((prev) => [...prev, msg])
+      if(msg?.to == selectedUser?.user_id){
+        setMessages((prev) => [...prev, msg])
+      }
     });
   
   }, []);
@@ -44,7 +46,7 @@ export default function ChatPage() {
 
   const fetchChat = async (e) => {
     const response = await fetch(
-      `http://localhost:8000/api/v1/chat/get-one-to-one-chat?user1=${userData?.user_id}&user2=${userData?.user_id === idObj?.srk ? idObj?.rock : idObj?.srk}`,
+      `http://localhost:8000/api/v1/chat/get-one-to-one-chat?user1=${userData?.user_id}&user2=${selectedUser?.user_id}`,
       {
         method: 'GET',
         headers: {
@@ -67,30 +69,59 @@ export default function ChatPage() {
     
   };
 
+  const fetchActiveUser = async (e) => {
+    const response = await fetch(`http://localhost:8000/api/v1/common/get-active-user?current_user=${userData?.user_id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    // Parse response data
+    const data = await response.json();
+    
+    // Handle response
+    if (response.ok) {
+      console.log("Fetched user:", data);
+      setActiveUsers(data)
+    } else {
+      console.error("Failed to fetch user:", data?.error || response.statusText);
+    }
+    
+  };
+
   useEffect(() => {
-    fetchChat()
+    fetchActiveUser()
   },[])
+
+  useEffect(() => {
+    if(selectedUser?.user_id){
+      fetchChat()
+    }
+  },[selectedUser, selectedUser?.user_id])
+
   return (
     <div className="flex h-full">
       {/* Chat List */}
       <div className="w-1/3 border-r border-gray-300 p-4 overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">Messages</h2>
         <ul className="space-y-2">
-          {mockUsers.map((user) => (
+          {activeUsers?.map((user) => (
             <li
               key={user.id}
               onClick={() => {
-                setSelectedUser(user);
-                setMessages(mockMessages); // Reset with dummy messages
+                setSelectedUser(user);// Reset with dummy messages
               }}
               className={`cursor-pointer p-3 rounded-lg ${
-                user?.id === user.id
+                selectedUser?.user_id === user?.user_id
                   ? "bg-blue-100"
                   : "hover:bg-gray-100"
               }`}
             >
-              <h3 className="font-medium">{user.name}</h3>
-              <p className="text-sm text-gray-500 truncate">{user.lastMessage}</p>
+              <h3 className="font-medium">{user?.name}</h3>
+              <p className="text-sm text-gray-500 truncate">{user?.lastMessage}</p>
             </li>
           ))}
         </ul>
@@ -106,7 +137,7 @@ export default function ChatPage() {
                 <div className="w-10 h-10 bg-blue-300 rounded-full flex items-center justify-center text-white font-bold uppercase">
                   {selectedUser.name[0]}
                 </div>
-                <h2 className="text-lg font-semibold">{selectedUser.name}</h2>
+                <h2 className="text-lg font-semibold">{selectedUser?.name}</h2>
               </div>
             </div>
 
