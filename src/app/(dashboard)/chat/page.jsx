@@ -41,6 +41,35 @@ export default function ChatPage() {
   
   }, []);
   
+
+  const fetchChat = async (e) => {
+    const response = await fetch(
+      `http://localhost:8000/api/v1/chat/get-one-to-one-chat?user1=${userData?.user_id}&user2=${userData?.user_id === idObj?.srk ? idObj?.rock : idObj?.srk}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    // Parse response data
+    const data = await response.json();
+    
+    // Handle response
+    if (response.ok) {
+      console.log("Fetched chat messages:", data);
+      setMessages(data)
+      // Do something with `data`, like updating state
+    } else {
+      console.error("Failed to fetch messages:", data?.error || response.statusText);
+    }
+    
+  };
+
+  useEffect(() => {
+    fetchChat()
+  },[])
   return (
     <div className="flex h-full">
       {/* Chat List */}
@@ -83,18 +112,18 @@ export default function ChatPage() {
 
             {/* Message List */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-              {messages.map((msg) => (
+              {messages.map((item) => (
                 <div
-                  key={msg.id}
+                  key={item?.id}
                   className={`mb-3 max-w-xs px-4 py-2 rounded-lg ${
-                    msg.fromUserId === userData?.user_id
+                    item?.from === userData?.user_id
                       ? "bg-blue-500 text-white ml-auto"
                       : "bg-white border"
                   }`}
                 >
-                  <p>{msg.message}</p>
+                  <p>{item?.msg}</p>
                   <span className="block text-xs text-right text-gray-400 mt-1">
-                    {msg.time}
+                    {item?.createdAt}
                   </span>
                 </div>
               ))}
