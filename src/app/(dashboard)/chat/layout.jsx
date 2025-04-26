@@ -1,16 +1,25 @@
 "use client";
+import { getSocket } from "@/utils/socket";
 import { useRouter } from "next/navigation";
-import { Children, useEffect, useRef, useState } from "react";
-import { socket } from "../home/page";
+import { useEffect, useRef, useState } from "react";
 
 export default function ChatLayout({children}) {
-    const router = useRouter()
+  const socket = getSocket();
+  const router = useRouter()
   const [selectedUser, setSelectedUser] = useState(null);
  
   const [activeUsers, setActiveUsers] = useState([])
   const selectedUserRef = useRef(selectedUser);
 
- 
+  const [userData, setUserData] = useState({})
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userDatas = JSON.parse(localStorage.getItem("userdata"));
+      setUserData(userDatas)
+    }
+  },[])
+  
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);

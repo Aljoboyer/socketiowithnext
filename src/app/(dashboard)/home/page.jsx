@@ -1,12 +1,7 @@
 "use client";
+import { getSocket } from "@/utils/socket";
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
-
-const userData = JSON.parse(localStorage.getItem("userdata"))
-export const socket = io("http://localhost:8000", {
-  query: { userId: userData?.user_id }
-});
-
+import { Bounce, toast } from "react-toastify";
 
 export default function HomePage() {
   const [startDate, setStartDate] = useState("");
@@ -17,7 +12,16 @@ export default function HomePage() {
     { id: 2, username: "Bob", email: "bob@email.com", date: "2025-04-11" },
     { id: 3, username: "Charlie", email: "charlie@email.com", date: "2025-04-09" },
   ];
+  const [userData, setUserData] = useState({})
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userDatas = JSON.parse(localStorage.getItem("userdata"));
+      setUserData(userDatas)
+    }
+  },[])
+    const socket = getSocket();
+  
   const filteredRequests = friendRequests.filter((req) => {
     if (!startDate || !endDate) return true;
     const requestDate = new Date(req.date);
@@ -45,6 +49,7 @@ export default function HomePage() {
       socket.off("receivedcomments")
     }
   },[])
+
 
   return (
     <div className="space-y-8">
@@ -130,8 +135,8 @@ export default function HomePage() {
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Comments</h3>
           <div className="max-h-96 overflow-y-auto space-y-4 mb-4 border p-4 rounded-lg bg-gray-50">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-white p-3 rounded shadow">
+            {comments.map((comment, index) => (
+              <div key={index} className="bg-white p-3 rounded shadow">
                 <p className="text-sm font-semibold">{comment?.commenter_id}</p>
                 <p className="text-gray-700">{comment.text}</p>
               </div>
@@ -155,6 +160,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+      
     </div>
   );
 }

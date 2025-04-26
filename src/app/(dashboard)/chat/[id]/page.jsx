@@ -1,17 +1,19 @@
 "use client"
 
+import { getSocket } from '@/utils/socket';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
-import { socket } from '../../home/page';
 
 export default function page() {
-    const params = useParams();
-    const id = params.id;
+  const params = useParams();
+  const id = params.id;
     
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   
   const [userData, setUserData] = useState(null);
+
+  const socket = getSocket();
 
   useEffect(() => {
     // Only runs on the client

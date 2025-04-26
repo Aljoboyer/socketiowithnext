@@ -1,13 +1,43 @@
 "use client"
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import 'react-toastify/dist/ReactToastify.css';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { useEffect } from "react";
+import { getSocket } from "@/utils/socket";
 
 export default function DashboardLayout({ children }) {
-    const router = useRouter();
-  
+    const router = useRouter();  
+    const socket = getSocket();
+    
+    const showNotification = (notify) => {
+      toast.info(`🦄 ${notify}`, {
+            position: "top-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+            });
+    }
+
+    useEffect(() => {
+      socket.on("notifyuser", (notification) => {
+        showNotification(notification)
+      })
+
+      return () =>{
+        socket.off("notifyuser")
+      }
+    },[])
+
 
   return (
     <div className="flex flex-col h-screen">
+       <ToastContainer />
       {/* Sticky Navbar */}
       <header className="sticky top-0 z-10 bg-white border-b shadow-sm px-6 py-4 flex items-center justify-between">
         {/* App Name */}
@@ -46,8 +76,8 @@ export default function DashboardLayout({ children }) {
             <Link href="/chat" className="block text-gray-700 hover:text-blue-600">
               Chat
             </Link>
-            <Link href="/dashboard/profile" className="block text-gray-700 hover:text-blue-600">
-              Profile
+            <Link href="/blog" className="block text-gray-700 hover:text-blue-600">
+              Blog
             </Link>
           </nav>
           <button onClick={() => {
