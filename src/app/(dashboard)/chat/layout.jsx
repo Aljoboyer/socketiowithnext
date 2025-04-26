@@ -1,13 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Children, useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
-
-const userData = JSON.parse(localStorage.getItem("userdata"))
-export const socket = io("http://localhost:8000", {
-  query: { userId: userData?.user_id }
-});
-
+import { socket } from "../home/page";
 
 export default function ChatLayout({children}) {
     const router = useRouter()

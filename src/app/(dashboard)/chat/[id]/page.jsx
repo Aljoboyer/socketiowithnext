@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
-import { socket } from '../layout';
+import { socket } from '../../home/page';
 
 export default function page() {
     const params = useParams();

@@ -1,5 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+const userData = JSON.parse(localStorage.getItem("userdata"))
+export const socket = io("http://localhost:8000", {
+  query: { userId: userData?.user_id }
+});
+
 
 export default function HomePage() {
   const [startDate, setStartDate] = useState("");
@@ -17,23 +24,40 @@ export default function HomePage() {
     return requestDate >= new Date(startDate) && requestDate <= new Date(endDate);
   });
 
+  // Comment state
+  const [comments, setComments] = useState([
+  ]);
+  const [commentText, setCommentText] = useState("");
+
+  const handleAddComment = () => {
+    const commentObj =  { commented_date: Date.now(), commenter_id: userData?.user_id, text: commentText.trim() }
+    
+    socket.emit('addcomment', commentObj)
+    setCommentText("");
+  };
+
+  useEffect(() => {
+    socket.on("receivedcomments" , (cmnt) => {
+      setComments((prev) => [...prev, cmnt])
+    })
+
+    return () =>{
+      socket.off("receivedcomments")
+    }
+  },[])
+
   return (
     <div className="space-y-8">
       {/* Top Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* User Amount */}
         <div className="bg-blue-500 text-white p-6 rounded-xl shadow">
           <h2 className="text-lg font-semibold">Total Users</h2>
           <p className="text-3xl font-bold mt-2">120</p>
         </div>
-
-        {/* New Messages */}
         <div className="bg-green-500 text-white p-6 rounded-xl shadow">
           <h2 className="text-lg font-semibold">New Messages</h2>
           <p className="text-3xl font-bold mt-2">32</p>
         </div>
-
-        {/* Friend Requests */}
         <div className="bg-purple-500 text-white p-6 rounded-xl shadow">
           <h2 className="text-lg font-semibold">Friend Requests</h2>
           <p className="text-3xl font-bold mt-2">5</p>
@@ -100,6 +124,35 @@ export default function HomePage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Comment Section */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Comments</h3>
+          <div className="max-h-96 overflow-y-auto space-y-4 mb-4 border p-4 rounded-lg bg-gray-50">
+            {comments.map((comment) => (
+              <div key={comment.id} className="bg-white p-3 rounded shadow">
+                <p className="text-sm font-semibold">{comment?.commenter_id}</p>
+                <p className="text-gray-700">{comment.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Write a comment..."
+              className="border rounded w-full px-3 py-2"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+            />
+            <button
+              onClick={handleAddComment}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Post
+            </button>
+          </div>
         </div>
       </div>
     </div>
