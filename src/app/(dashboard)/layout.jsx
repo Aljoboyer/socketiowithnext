@@ -35,6 +35,18 @@ export default function DashboardLayout({ children }) {
     },[])
 
 
+    useEffect(() => {
+      socket.on("newBlogPosted", (notification) => {
+        console.log('Client check', notification)
+        showNotification(notification)
+      })
+
+      return () =>{
+        socket.off("newBlogPosted")
+      }
+    },[])
+
+
   return (
     <div className="flex flex-col h-screen">
        <ToastContainer />
