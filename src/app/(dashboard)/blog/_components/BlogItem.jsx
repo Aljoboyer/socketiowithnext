@@ -3,7 +3,7 @@ import React from 'react'
 export default function BlogItem({
     blog,
     comments, handleSubmit,
-    setNewComment, newComment}) {
+    setNewComment, userData}) {
   return (
     
     <div className="w-[500px] mx-auto p-6 bg-white rounded-2xl shadow-md mt-10">
@@ -25,14 +25,18 @@ export default function BlogItem({
           </div>
         ))}
       </div>
-
-      {/* Add Comment Box */}
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+      
+      {
+        userData?.user_id == blog?.writer_id ? ' ' :  <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
         <textarea
           className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
           rows="3"
           placeholder="Write a comment..."
-          onChange={(e) => setNewComment({commentText: e.target.value, blog_id: blog?.blog_id})}
+          onChange={(e) => setNewComment({
+            commentText: e.target.value, 
+            blog_id: blog?.blog_id, 
+            blog_writer: blog?.writer_id
+          })}
         ></textarea>
         <button
           type="submit"
@@ -41,6 +45,7 @@ export default function BlogItem({
           Post Comment
         </button>
       </form>
+      }
     </div>
   </div>
   )

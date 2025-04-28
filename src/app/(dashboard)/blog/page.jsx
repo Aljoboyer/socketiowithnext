@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BlogItem from "./_components/BlogItem";
+import { getSocket } from "@/utils/socket";
 
 export default function BlogWithComments() {
   const [comments, setComments] = useState([
@@ -10,14 +11,23 @@ export default function BlogWithComments() {
   ]);
   const [newComment, setNewComment] = useState("");
   const [blogs, setBlogs] = useState([]);
+  const socket = getSocket();
+  const [userData, setUserData] = useState({})
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userDatas = JSON.parse(localStorage.getItem("userdata"));
+      setUserData(userDatas)
+    }
+  },[])
+  
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (newComment.trim() === "") return;
 
-    // Add the new comment at the top
-    setComments([newComment, ...comments]);
-    setNewComment(""); // clear input
+    // setComments([newComment, ...comments]);
+    // setNewComment(""); 
+
+    socket.emit("commentedonpost", {...newComment, commenter_id: userData?.user_id})
   };
 
    const fetchBlogs = async (e) => {
@@ -56,7 +66,9 @@ export default function BlogWithComments() {
           newComment={newComment}
           setNewComment={setNewComment}
           handleSubmit={handleSubmit}
-          comments={comments}/>
+          comments={comments}
+          userData={userData}
+          />
         ))
       }
    </div>
