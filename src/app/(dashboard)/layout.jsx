@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }) {
             localStorage.removeItem('userdata')
       router.push('/')
             
-          }} className="text-blue-700 font-bold text-lg cursor-pointer">Logout</button>
+          }} className="text-blue-700 font-bold text-lg cursor-pointer mt-4">Logout</button>
         </aside>
 
         {/* Page Content */}

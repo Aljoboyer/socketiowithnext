@@ -1,6 +1,6 @@
 "use client";
 import { getSocket } from "@/utils/socket";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function ChatLayout({children}) {
@@ -57,6 +57,9 @@ export default function ChatLayout({children}) {
         userId: userData?.user_id, // Use unique ID from auth system
       });
       }, []);
+    
+  const params = useParams();
+  const id = params.id;
 
   return (
     <div className="flex h-full">
@@ -71,7 +74,7 @@ export default function ChatLayout({children}) {
                 router.push(`/chat/${user?.user_id}`)
               }}
               className={`cursor-pointer p-3 rounded-lg ${
-                selectedUser?.user_id === user?.user_id
+                id === user?.user_id
                   ? "bg-blue-100"
                   : "hover:bg-gray-100"
               }`}

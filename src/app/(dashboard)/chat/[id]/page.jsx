@@ -38,7 +38,6 @@ export default function page() {
      setMessages((prev) => [...prev, uiMsgObj])
     };
    
-
     const selectedUserRef = useRef(id);
 
     useEffect(() => {

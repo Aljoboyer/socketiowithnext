@@ -1,4 +1,4 @@
-"use client"; // (if you use Next.js 13+ app directory, otherwise ignore this)
+"use client"; 
 
 import { useEffect, useRef, useState } from "react";
 import BlogItem from "./_components/BlogItem";
