@@ -51,7 +51,7 @@ export default function page() {
         const handlePrivateMessage = (msg) => {
           const current = selectedUserRef.current;
           const isCurrentChat = msg.from === current || msg.to === current;
-          console.log('Checking.... ===>', msg, current)
+         
           if (isCurrentChat) {
             setMessages((prev) => [...prev, msg]);
           } else {

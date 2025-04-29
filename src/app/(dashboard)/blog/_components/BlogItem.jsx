@@ -1,8 +1,7 @@
 import React from 'react'
 
 export default function BlogItem({
-    blog,
-    comments, handleSubmit,
+    blog,handleSubmit,
     setNewComment, userData}) {
   return (
     
@@ -19,9 +18,10 @@ export default function BlogItem({
     <div className="space-y-6">
       {/* Comments List */}
       <div className="space-y-4">
-        {comments.map((comment, index) => (
+        {blog?.comments?.map((comment, index) => (
           <div key={index} className="p-4 bg-gray-100 rounded-xl">
-            <p className="text-sm text-gray-800">{comment}</p>
+            <p className="text-sm text-blue-600 font-bold">{comment?.commenter_id}</p>
+            <p className="text-sm text-gray-800">{comment?.commentText}</p>
           </div>
         ))}
       </div>
@@ -35,7 +35,7 @@ export default function BlogItem({
           onChange={(e) => setNewComment({
             commentText: e.target.value, 
             blog_id: blog?.blog_id, 
-            blog_writer: blog?.writer_id
+            blog_writer: blog?.writer_id,
           })}
         ></textarea>
         <button

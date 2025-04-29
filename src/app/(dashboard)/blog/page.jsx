@@ -1,18 +1,15 @@
 "use client"; // (if you use Next.js 13+ app directory, otherwise ignore this)
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BlogItem from "./_components/BlogItem";
 import { getSocket } from "@/utils/socket";
 
 export default function BlogWithComments() {
-  const [comments, setComments] = useState([
-    "This is a comment! Very insightful blog.",
-    "Loved reading this. Keep it up!",
-  ]);
   const [newComment, setNewComment] = useState("");
   const [blogs, setBlogs] = useState([]);
   const socket = getSocket();
   const [userData, setUserData] = useState({})
+  const blogRef = useRef(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -21,12 +18,26 @@ export default function BlogWithComments() {
     }
   },[])
   
+  const addCommentToUi = (comnt, allblogs) => {
+  
+    const blogDataMap = allblogs?.map((item) => {
+      if(item?.blog_id == comnt?.blog_id){
+        const commentArr = item?.comments ? item?.comments : []
+        const newItem = {...item, comments: [...commentArr, {...comnt, commenter_id: userData?.user_id ? userData?.user_id : comnt?.commenter_id}]}
+        return newItem
+      }
+      else{
+        return item
+      }
+    })
+    blogRef.current = blogDataMap
+    setBlogs(blogDataMap)
+
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // setComments([newComment, ...comments]);
-    // setNewComment(""); 
-
+    addCommentToUi(newComment, blogs)
     socket.emit("commentedonpost", {...newComment, commenter_id: userData?.user_id})
   };
 
@@ -52,8 +63,30 @@ export default function BlogWithComments() {
       
     };
     
+        
     useEffect(() => {
       fetchBlogs()
+    },[])
+
+    useEffect(() => {
+      if(blogs?.length > 0){
+        blogRef.current = blogs
+      }
+    },[blogs?.length])
+
+    useEffect(() => {
+      const handleAddComnt = (comnt) => {
+        const blogCurr = blogRef.current
+        if(blogCurr){
+          console.log('comment here ==>', comnt)
+          addCommentToUi(comnt, blogCurr)
+        }
+      }
+      socket.on("commentadded", handleAddComnt)
+
+      return () =>{
+        socket.off("commentadded")
+      }
     },[])
 
   return (
@@ -66,7 +99,6 @@ export default function BlogWithComments() {
           newComment={newComment}
           setNewComment={setNewComment}
           handleSubmit={handleSubmit}
-          comments={comments}
           userData={userData}
           />
         ))
