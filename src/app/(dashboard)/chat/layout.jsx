@@ -65,7 +65,7 @@ export default function ChatLayout({ children }) {
 
   const handleCreateGroup = async() => {
     
-    const reqData = {group_name: groupName, userIds: selectedGroupUsers}
+    const reqData = {group_name: groupName, userIds: [...selectedGroupUsers, userData?.user_id]}
 
     const response = await fetch('http://localhost:8000/api/v1/group/create-group', {
       method: 'POST',
@@ -93,10 +93,11 @@ export default function ChatLayout({ children }) {
     );
 
     const data = await response.json();
-
-    if (response.ok) {
+    if (data?.msg !== 'No Group Found') {
       setUserGroups(data)
     } else {
+      setUserGroups([])
+
       console.error("Failed to fetch user:", data?.error || response.statusText);
     }
   };

@@ -24,18 +24,11 @@ export default function page() {
   }, []);
 
     const handleSend = () => {
-      const msgObj = {
-        toUserId: id,     // Receiver's userId
-        fromUserId: userData?.user_id,  // Sender's userId
-        message: newMessage,
-      }
-      socket.emit("sendPrivateMessage", msgObj);
-      const uiMsgObj = {
-        to: id,     // Receiver's userId
-        from: userData?.user_id,  // Sender's userId
-        msg: newMessage,
-      }
-     setMessages((prev) => [...prev, uiMsgObj])
+      socket.emit("group-message", {
+        groupId: id,
+        sender: userData?.user_id,
+        message: newMessage
+      });
     };
    
     const selectedUserRef = useRef(id);
@@ -43,6 +36,7 @@ export default function page() {
     useEffect(() => {
         if(id){
             selectedUserRef.current = id;
+            socket.emit("join-group", {groupId: id });
         }
     }, [id]);
 
@@ -59,43 +53,32 @@ export default function page() {
           }
         };
       
-        socket.on("receivePrivateMessage", handlePrivateMessage);
+        socket.on("group-message", handlePrivateMessage);
       
         return () => {
-          socket.off("receivePrivateMessage", handlePrivateMessage);
+          socket.off("group-message", handlePrivateMessage);
         };
       }, []);
 
-  const fetchChat = async (e) => {
-    const response = await fetch(
-      `http://localhost:8000/api/v1/chat/get-one-to-one-chat?user1=${userData?.user_id}&user2=${id}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    
-    // Parse response data
-    const data = await response.json();
-    
-    // Handle response
-    if (response.ok) {
-      setMessages(data)
-      // Do something with `data`, like updating state
-    } else {
-      console.error("Failed to fetch messages:", data?.error || response.statusText);
-    }
-    
-  };
-
   useEffect(() => {
-    if(id && userData?.user_id){
-      fetchChat()
-    }
-  },[id, userData?.user_id])
+    const handlePrivateMessage = (msg) => {
+      const current = selectedUserRef.current;
+     
+      if (current == msg.groupId) {
+        setMessages((prev) => [...prev, msg]);
+      } else {
+        // Optional: show notification for other chat
+        console.log("📬 Message from another user, not shown in current chat.");
+      }
+    };
+  
+    socket.on("group-message", handlePrivateMessage);
+  
+    return () => {
+      socket.off("group-message", handlePrivateMessage);
+    };
 
+  },[])
   return (
    <>
    {/* Header */}
@@ -113,14 +96,17 @@ export default function page() {
                 <div
                   key={index}
                   className={`mb-3 max-w-xs px-4 py-2 rounded-lg ${
-                    item?.from === userData?.user_id
+                    item?.sender === userData?.user_id
                       ? "bg-blue-500 text-white ml-auto"
                       : "bg-white border"
                   }`}
                 >
-                  <p>{item?.msg}</p>
+                  <p
+                  className="font-bold text-green-600 "
+                  >{item?.sender !== userData?.user_id ? item?.sender : ''}</p>
+                  <p>{item?.message}</p>
                   <span className="block text-xs text-right text-gray-400 mt-1">
-                    {item?.createdAt}
+                    {item?.timestamp}
                   </span>
                 </div>
               ))}

@@ -20,7 +20,8 @@ export default function HomePage() {
       setUserData(userDatas)
     }
   },[])
-    const socket = getSocket();
+  
+  const socket = getSocket();
   
   const filteredRequests = friendRequests.filter((req) => {
     if (!startDate || !endDate) return true;
