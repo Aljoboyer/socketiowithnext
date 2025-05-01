@@ -109,6 +109,40 @@ export default function ChatLayout({ children }) {
     }
   },[userData?.user_id])
 
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const onlineUsersRef = useRef(onlineUsers); 
+
+  useEffect(() => {
+    onlineUsersRef.current = onlineUsers;
+  }, [onlineUsers]);
+
+  useEffect(() => {
+    socket.on("onlineUsers", (users) => {
+      console.log('checking ==>', users)
+      setOnlineUsers(users);
+    });
+
+    socket.on("userOnline", (userId) => {
+      if (!onlineUsersRef.current.includes(userId)) {
+        setOnlineUsers((prev) => [...prev, userId]);
+      }
+    });
+
+    socket.on("userOffline", (userId) => {
+      setOnlineUsers((prev) => prev.filter((id) => id !== userId));
+    });
+
+    return () => {
+      socket.off("onlineUsers");
+      socket.off("userOnline");
+      socket.off("userOffline");
+      // socket.disconnect();
+    };
+  }, []);
+
+
+  console.log("onlineUsers ===>", onlineUsers)
+
   return (
     <div className="flex h-full">
       {/* Chat List */}
@@ -197,7 +231,12 @@ export default function ChatLayout({ children }) {
                 id === user?.user_id ? "bg-blue-100" : "hover:bg-gray-100"
               }`}
             >
+              <div className="flex flex-row items-center">
               <h3 className="font-medium">{user?.name}</h3>
+              {
+                onlineUsers.includes(user?.user_id) ? <div className="h-[10px] w-[10px] bg-green-600 rounded-full ms-2"></div> : ''
+              }
+              </div>
               <p className="text-sm text-gray-500 truncate">{user?.lastMessage}</p>
             </li>
           ))}
