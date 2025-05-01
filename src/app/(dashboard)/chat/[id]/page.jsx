@@ -103,7 +103,6 @@ export default function page() {
   useEffect(() => {
     const handlePrivateTyping = (data) => {
       const current = selectedUserRef.current;
-      console.log('typing...',data, current)
       if (data.fromUserId == current) {
         setShowTyping(true)
       } 
@@ -137,6 +136,26 @@ export default function page() {
     socket.emit("typingoff", typObj)
   }
   
+  useEffect(() => {
+    socket.emit("messageSeen", { fromUserId: personalIdRef.current, toUserId: selectedUserRef.current});
+  }, []); 
+
+  const [messageStatus, setMessageStatus] = useState('')
+  
+  useEffect(() => {
+    socket.on("messageDelivered", (data) => {
+      // console.log('checked', data)
+      setMessageStatus("delivered")
+    });
+    
+    socket.on("messageSeen", (data) => {
+      // console.log('checked 222', data)
+
+      setMessageStatus("seen")
+    });
+    
+  },[])
+  
   return (
    <>
    {/* Header */}
@@ -165,6 +184,10 @@ export default function page() {
                   </span>
                 </div>
               ))}
+              {messageStatus === "seen" && <span>✔✔ Seen</span>}
+              {messageStatus === "delivered" && <span>✔✔ Delivered</span>}
+              {/* {messageStatus === "sent" && <span>✔ Sent</span>} */}
+
             </div>
               {showTyping && <p className='p-4 font-medium text-blue-500'>Typing...</p>}
             {/* Input Area */}

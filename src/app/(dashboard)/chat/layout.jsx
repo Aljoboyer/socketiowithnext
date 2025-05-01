@@ -118,10 +118,10 @@ export default function ChatLayout({ children }) {
 
   useEffect(() => {
     socket.on("onlineUsers", (users) => {
-      console.log('checking ==>', users)
+      
       setOnlineUsers(users);
     });
-
+ 
     socket.on("userOnline", (userId) => {
       if (!onlineUsersRef.current.includes(userId)) {
         setOnlineUsers((prev) => [...prev, userId]);
@@ -139,10 +139,9 @@ export default function ChatLayout({ children }) {
       // socket.disconnect();
     };
   }, []);
-
-
-  console.log("onlineUsers ===>", onlineUsers)
-
+  useEffect(() => {
+    socket.emit('onlinenow')
+  },[])
   return (
     <div className="flex h-full">
       {/* Chat List */}

@@ -51,6 +51,9 @@ export default function HomePage() {
     }
   },[])
 
+  useEffect(() => {
+    socket.emit('onlinenow')
+  },[])
 
   return (
     <div className="space-y-8">
