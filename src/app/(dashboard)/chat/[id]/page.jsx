@@ -14,7 +14,8 @@ export default function page() {
   const [userData, setUserData] = useState(null);
 
   const socket = getSocket();
-
+  const [showTyping, setShowTyping] = useState(false)
+  
   useEffect(() => {
     // Only runs on the client
     const storedUserData = localStorage.getItem("userdata");
@@ -39,11 +40,13 @@ export default function page() {
     };
    
     const selectedUserRef = useRef(id);
+    const personalIdRef = useRef(userData);
 
     useEffect(() => {
         if(id){
             selectedUserRef.current = id;
         }
+        
     }, [id]);
 
     useEffect(() => {
@@ -54,7 +57,7 @@ export default function page() {
           if (isCurrentChat) {
             setMessages((prev) => [...prev, msg]);
           } else {
-            // Optional: show notification for other chat
+            
             console.log("📬 Message from another user, not shown in current chat.");
           }
         };
@@ -93,9 +96,47 @@ export default function page() {
   useEffect(() => {
     if(id && userData?.user_id){
       fetchChat()
+      personalIdRef.current = userData?.user_id
     }
   },[id, userData?.user_id])
 
+  useEffect(() => {
+    const handlePrivateTyping = (data) => {
+      const current = selectedUserRef.current;
+      console.log('typing...',data, current)
+      if (data.fromUserId == current) {
+        setShowTyping(true)
+      } 
+    };
+    const handlePrivateTypingOff = (data) => {
+      const current = selectedUserRef.current;
+      if (data.fromUserId == current) {
+        setShowTyping(false)
+      } 
+    };
+    socket.on("typingstatuson", handlePrivateTyping);
+    socket.on("typingstatusoff", handlePrivateTypingOff);
+
+    return () => {
+      socket.off('typingstatuson');
+      socket.off('typingstatusoff');
+    }
+
+  },[])
+
+  const onChangeHandler = (value) => {
+    setNewMessage(value)
+    const typObj = {fromUserId: userData?.user_id, toUserId: id}
+
+    socket.emit("typingon", typObj)
+  }
+
+  const onBlurHandler = () => {
+    const typObj = {fromUserId: userData?.user_id, toUserId: id}
+
+    socket.emit("typingoff", typObj)
+  }
+  
   return (
    <>
    {/* Header */}
@@ -125,7 +166,7 @@ export default function page() {
                 </div>
               ))}
             </div>
-
+              {showTyping && <p className='p-4 font-medium text-blue-500'>Typing...</p>}
             {/* Input Area */}
             <div className="p-4 border-t bg-white">
               <div className="flex items-center gap-2">
@@ -134,7 +175,10 @@ export default function page() {
                   className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Type your message..."
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onBlur={onBlurHandler}
+                  onChange={(e) => {
+                    onChangeHandler(e.target.value)
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 />
                 <button
