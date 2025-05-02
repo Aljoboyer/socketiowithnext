@@ -16,7 +16,7 @@ export default function BlogWithComments() {
       const userDatas = JSON.parse(localStorage.getItem("userdata"));
       setUserData(userDatas)
     }
-  },[])
+  },[blogs?.length])
   
   const addCommentToUi = (comnt, allblogs) => {
   
@@ -78,7 +78,7 @@ export default function BlogWithComments() {
       const handleAddComnt = (comnt) => {
         const blogCurr = blogRef.current
         if(blogCurr){
-          console.log('comment here ==>', comnt)
+         
           addCommentToUi(comnt, blogCurr)
         }
       }
@@ -88,7 +88,7 @@ export default function BlogWithComments() {
         socket.off("commentadded")
       }
     },[])
-
+ 
   return (
    <div className="w-full px-6 py-6 bg-gray-100 h-auto flex flex-row flex-wrap">
       {

@@ -137,8 +137,10 @@ export default function page() {
   }
   
   useEffect(() => {
-    socket.emit("messageSeen", { fromUserId: personalIdRef.current, toUserId: selectedUserRef.current});
-  }, []); 
+    if(personalIdRef.current && selectedUserRef.current){
+      socket.emit("messageSeen", { fromUserId: personalIdRef.current, toUserId: selectedUserRef.current});
+    }
+  }, [personalIdRef.current,selectedUserRef.current]); 
 
   const [messageStatus, setMessageStatus] = useState('')
   
@@ -148,12 +150,16 @@ export default function page() {
       setMessageStatus("delivered")
     });
     
-    socket.on("messageSeen", (data) => {
-      // console.log('checked 222', data)
+    socket.on("messageSeenReceived", (data) => {
+      console.log('checked 222', data)
 
       setMessageStatus("seen")
     });
     
+    return () => {
+      socket.off("messageDelivered")
+      socket.off("messageSeenReceived")
+    }
   },[])
   
   return (
