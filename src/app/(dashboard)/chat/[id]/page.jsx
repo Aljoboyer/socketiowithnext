@@ -138,7 +138,16 @@ export default function page() {
   
   useEffect(() => {
     if(personalIdRef.current && selectedUserRef.current){
-      socket.emit("messageSeen", { fromUserId: personalIdRef.current, toUserId: selectedUserRef.current});
+      // socket.emit("messageSeen", { fromUserId: personalIdRef.current, toUserId: selectedUserRef.current});
+
+       // When component mounts
+       socket.emit("chatOpened", { toUserId: selectedUserRef.current , fromUserId: personalIdRef?.current});
+          
+       return () => {
+         // When component unmounts
+         socket.emit("chatClosed", { toUserId: selectedUserRef.current , fromUserId: personalIdRef?.current});
+       };
+
     }
   }, [personalIdRef.current,selectedUserRef.current]); 
 
@@ -151,8 +160,6 @@ export default function page() {
     });
     
     socket.on("messageSeenReceived", (data) => {
-      console.log('checked 222', data)
-
       setMessageStatus("seen")
     });
     
@@ -161,6 +168,7 @@ export default function page() {
       socket.off("messageSeenReceived")
     }
   },[])
+  
   
   return (
    <>

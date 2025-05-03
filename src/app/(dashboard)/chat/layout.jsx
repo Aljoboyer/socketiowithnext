@@ -142,6 +142,7 @@ export default function ChatLayout({ children }) {
   useEffect(() => {
     socket.emit('onlinenow')
   },[])
+  
   return (
     <div className="flex h-full">
       {/* Chat List */}
